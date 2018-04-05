@@ -1,0 +1,28 @@
+#!/bin/sh
+
+scriptpath="$( cd "$(dirname "$0")" ; pwd -P )"
+declare -a arr=("$scriptpath/report_campaigns" "$scriptpath/report_leftovers" "$scriptpath/report_tiers")
+
+TOTAL_SIZE=0
+TOTAL_LINES=0
+
+for dir in "${arr[@]}"
+do
+    for i in "$dir"/*.csv; do
+        SIZE=$(stat --printf="%s" "$i")
+        TOTAL_SIZE=`expr $TOTAL_SIZE + $SIZE`
+
+        LINES=$(wc -l "$i" | awk '{print $1;}')
+        TOTAL_LINES=`expr $TOTAL_LINES + $LINES`
+        
+        echo $(basename "$i")
+        echo "Size:" $(numfmt --to=iec --suffix=B $SIZE)
+        echo "Records (lines):" $LINES
+        echo $(head -1 "$i")
+        echo $(head -2 "$i" | tail -1)
+        echo ""
+    done
+done
+
+echo "Total size:" $(numfmt --to=iec --suffix=B $TOTAL_SIZE)
+echo "Total records (lines):" $TOTAL_LINES

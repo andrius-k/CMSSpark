@@ -44,11 +44,6 @@ def quiet_logs(sc):
     logger = sc._jvm.org.apache.log4j
     logger.LogManager.getRootLogger().setLevel(logger.Level.ERROR)
 
-def aaa(a):
-    print a
-    print type(a)
-    return a
-
 def run(fout, date, yarn=None, verbose=None, inst='GLOBAL', limit=100):
     """
     Main function to run pyspark job. It requires a schema file, an HDFS directory
