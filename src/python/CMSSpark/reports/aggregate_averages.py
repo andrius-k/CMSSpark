@@ -70,21 +70,25 @@ def run(fout, yarn=None, verbose=None):
                         .options(treatEmptyValuesAsNulls='true', nullValue='null')\
                         .load('hdfs:///cms/phedex/2017/03/*/part-00000', schema=schema)
                         # .load('hdfs:///cms/phedex/*/*/*/part-*', schema=schema)
-    
+
     # Remove all tape sites
     is_tape = lambda site: site.endswith('_MSS') | site.endswith('_Buffer') | site.endswith('_Export')
     df = df.where(is_tape(df.site) == False)
 
+    extract_campaign_udf = udf(lambda dataset: dataset.split('/')[2])
+    extract_tier_udf = udf(lambda dataset: dataset.split('/')[3])
     date_to_timestamp_udf = udf(lambda date: time.mktime(datetime.datetime.strptime(date, "%Y%m%d").timetuple()))
     timestamp_to_date_udf = udf(lambda timestamp: datetime.datetime.fromtimestamp(float(timestamp)).strftime('%Y%m%d'))
     days_delta_udf = udf(lambda t1, t2: (datetime.datetime.fromtimestamp(float(t1)) - datetime.datetime.fromtimestamp(float(t2))).days + 1)
     count_udf = udf(lambda list: len(list))
 
+    df = df.withColumn('campaign', extract_campaign_udf(df.dataset))
+    df = df.withColumn('tier', extract_tier_udf(df.dataset))
     df = df.withColumn('date_min', date_to_timestamp_udf(df.date))
     df = df.withColumn('date_max', date_to_timestamp_udf(df.date))
     df = df.withColumn('size_average', df.size)
 
-    df = df.groupBy('dataset')\
+    df = df.groupBy(['campaign', 'tier'])\
            .agg({'date_min': 'min', 'date_max': 'max', 'date': 'collect_set', 'size_average': 'avg', 'size': 'max'})\
            .withColumnRenamed('min(date_min)', 'date_min')\
            .withColumnRenamed('max(date_max)', 'date_max')\
@@ -98,8 +102,9 @@ def run(fout, yarn=None, verbose=None):
            .withColumn('date_max', timestamp_to_date_udf(df.date_max))
         
     df = df.withColumn('existence_in_period', df.days_count / df.period_days)
-    df = df.withColumn('average_in_period', df.size_average * df.existence_in_period)
-
+    df = df.withColumn('average_size_in_period', df.size_average * df.existence_in_period)
+    
+    # campaign, tier, date_max, date_min, days_count, size_max, size_average, period_days, existence_in_period, average_size_in_period
     df.show(truncate=False)
 
     ctx.stop()
