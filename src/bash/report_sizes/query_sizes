@@ -1,0 +1,28 @@
+#!/bin/sh
+
+if [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
+    echo "Usage: ./"$(basename "$0")" <campaign> <tier>"
+    echo "Example: ./"$(basename "$0")" PhaseIITDRSpring17DR GEN-SIM-RECO"
+    echo "<campaign> = CMS campaign"
+    echo "<tier> = CMS tier"
+    echo "Will return how much data for a given campaign is there in a given data tier, average size of that campaign, occupied space in T1, T2 and T3, disk space occupied by campaigns not accessed recently."
+    exit 0
+fi
+
+if [[ -n $1 ]]
+then
+    campaign=$1
+fi
+
+if [[ -n $2 ]]
+then
+    tier=$2
+fi
+
+echo 'Campaign: '$campaign
+echo 'Tier: '$tier
+
+# Get current script's absolute path
+scriptpath="$( cd "$(dirname "$0")" ; pwd -P )"
+
+PYTHONPATH=$scriptpath/../../python $scriptpath/../../../bin/run_spark /reports/query_sizes.py --campaign=$campaign --tier=$tier

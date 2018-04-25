@@ -120,7 +120,7 @@ def run(fout, date, yarn=None, verbose=None, inst='GLOBAL', limit=100):
     result = phedex_df.join(dbs_df, phedex_df.dataset == dbs_df.dataset)\
                       .drop(dbs_df.dataset)
 
-    extract_campaign_udf = udf(lambda dataset: dataset.split('/')[2])
+    extract_campaign_udf = udf(lambda dataset: dataset.split('/')[2].split('-')[0])
     extract_tier_udf = udf(lambda dataset: dataset.split('/')[3])
 
     # campaign, tier, dbs_size, phedex_size, size_on_disk

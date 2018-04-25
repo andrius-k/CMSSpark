@@ -2,9 +2,9 @@
 
 if [ $# -eq 0 ] || [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
     echo "Usage: ./"$(basename "$0")" <date> [location]"
-    echo "Example: ./"$(basename "$0")" 20170228 /cms/users/$USER/phedex_datasets"
+    echo "Example: ./"$(basename "$0")" 20170228 /cms/aggregation/phedex_datasets"
     echo "<date> = PhEDEx date in the following format: YYYYMMDD."
-    echo "[location] = hdfs location of resulting files. Default: /cms/users/$USER/phedex_datasets"
+    echo "[location] = hdfs location of resulting files. Default: /cms/aggregation/phedex_datasets"
     exit 0
 fi
 
@@ -23,9 +23,13 @@ then
     exit
 fi
 
+year=${date:0:4}
+month=${date:4:2}
+day=${date:6:2}
+
 echo 'Aggregating for date: '$date
 
-hdir=/cms/users/$USER/phedex_datasets
+hdir=/cms/aggregation/phedex_datasets
 
 if [[ -n $2 ]]
 then
@@ -36,6 +40,8 @@ if [[ $hdir != hdfs://* ]]
 then
     hdir=hdfs://$hdir
 fi
+
+hdir=$hdir/$year/$month/$day
 
 echo 'Results path: '$hdir
 
@@ -65,4 +71,7 @@ then
     # concatenate all parts except header
     header=`cat $scriptpath/phedex_df.csv`
     cat $scriptpath/$result_dir/part* | grep -v $header >> $scriptpath/phedex_df.csv
+
+    # Remove folder with separate parts
+    rm -rf "$scriptpath/$result_dir"
 fi

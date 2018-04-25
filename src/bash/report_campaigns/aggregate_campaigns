@@ -2,9 +2,9 @@
 
 if [ $# -eq 0 ] || [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
     echo "Usage: ./"$(basename "$0")" <date> [location]"
-    echo "Example: ./"$(basename "$0")" 20170228 /cms/users/$USER/campaigns"
+    echo "Example: ./"$(basename "$0")" 20170228 /cms/aggregation/campaigns"
     echo "<date> = PhEDEx date in the following format: YYYYMMDD."
-    echo "[location] = hdfs location of resulting files. Default: /cms/users/$USER/campaigns"
+    echo "[location] = hdfs location of resulting files. Default: /cms/aggregation/campaigns"
     exit 0
 fi
 
@@ -23,9 +23,13 @@ then
     exit
 fi
 
+year=${date:0:4}
+month=${date:4:2}
+day=${date:6:2}
+
 echo 'Aggregating for date: '$date
 
-hdir=/cms/users/$USER/campaigns
+hdir=/cms/aggregation/campaigns
 
 if [[ -n $2 ]]
 then
@@ -36,6 +40,8 @@ if [[ $hdir != hdfs://* ]]
 then
     hdir=hdfs://$hdir
 fi
+
+hdir=$hdir/$year/$month/$day
 
 echo 'Results path: '$hdir
 
@@ -100,4 +106,7 @@ then
     # Concatenate all site - campaign count parts except header
     header=`cat $scriptpath/site_campaign_count_disk_only_df.csv`
     cat $scriptpath/$result_dir/site_campaign_count_disk_only/part* | grep -v $header >> $scriptpath/site_campaign_count_disk_only_df.csv
+
+    # Remove folder with separate parts
+    rm -rf "$scriptpath/$result_dir"
 fi

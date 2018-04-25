@@ -2,12 +2,12 @@
 
 if [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
     echo "Usage: ./"$(basename "$0")" [location]"
-    echo "Example: ./"$(basename "$0")" /cms/aggregation/averages"
-    echo "[location] = hdfs location of resulting files. Default: /cms/aggregation/averages"
+    echo "Example: ./"$(basename "$0")" /cms/aggregation/sizes"
+    echo "[location] = hdfs location of resulting files. Default: /cms/aggregation/sizes"
     exit 0
 fi
 
-hdir=/cms/aggregation/averages
+hdir=/cms/aggregation/sizes
 
 if [[ -n $1 ]]
 then
@@ -27,7 +27,7 @@ scriptpath="$( cd "$(dirname "$0")" ; pwd -P )"
 # Remove previous data first
 hadoop fs -rm -r -skipTrash $hdir
 
-PYTHONPATH=$scriptpath/../../python $scriptpath/../../../bin/run_spark /reports/aggregate_averages.py --fout=$hdir --yarn --verbose
+PYTHONPATH=$scriptpath/../../python $scriptpath/../../../bin/run_spark /reports/aggregate_sizes.py --fout=$hdir --yarn --verbose
 
 hadoop fs -test -e $hdir
 exists=$?
@@ -42,11 +42,11 @@ then
     hadoop fs -get $hdir $scriptpath
 
     # Extract header
-    head -1 $scriptpath/$result_dir/part-00000 > $scriptpath/averages_df.csv
+    head -1 $scriptpath/$result_dir/part-00000 > $scriptpath/sizes_df.csv
 
     # Concatenate all parts except header
-    header=`cat $scriptpath/averages_df.csv`
-    cat $scriptpath/$result_dir/part* | grep -v $header >> $scriptpath/averages_df.csv
+    header=`cat $scriptpath/sizes_df.csv`
+    cat $scriptpath/$result_dir/part* | grep -v $header >> $scriptpath/sizes_df.csv
 
     # Remove folder with separate parts
     rm -rf "$scriptpath/$result_dir"

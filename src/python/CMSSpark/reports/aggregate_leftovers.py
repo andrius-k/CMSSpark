@@ -121,11 +121,11 @@ def run(fout, date, yarn=None, verbose=None, inst='GLOBAL'):
 
     # Subtract to get leftovers
 
-    extract_campaign_udf = udf(lambda dataset: dataset.split('/')[2])
+    extract_campaign_udf = udf(lambda dataset: dataset.split('/')[2].split('-')[0])
 
     # dataset
     leftover_datasets_df = phedex_df.select('dataset').subtract(dbs_df.select('dataset'))
-
+    
     # dataset, campaign, sites, phedex_size
     leftovers_df = leftover_datasets_df.select('dataset').join(phedex_df, 'dataset')#.join(dbs_df, 'dataset')
     leftovers_df = leftovers_df.withColumn('campaign', extract_campaign_udf(leftovers_df.dataset))\

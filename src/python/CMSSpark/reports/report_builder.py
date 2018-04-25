@@ -1,7 +1,11 @@
 class ReportBuilder():
-    report = ''
+
+    def __init__(self):
+        self.report = ""
+
     def append(self, value):
-        ReportBuilder.report += value
+        self.report += value
     
     def get(self):
-        return ReportBuilder.report
+        return self.report
+    

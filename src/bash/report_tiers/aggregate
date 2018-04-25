@@ -2,10 +2,10 @@
 
 if [ $# -eq 0 ] || [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
     echo "Usage: ./"$(basename "$0")" <date> [dbs_location] [phedex_location]"
-    echo "Example: ./"$(basename "$0")" 20170228 /cms/users/$USER/dbs_datasets /cms/users/$USER/phedex_datasets"
+    echo "Example: ./"$(basename "$0")" 20170228 /cms/aggregation/dbs_datasets /cms/aggregation/phedex_datasets"
     echo "<date> = PhEDEx date in the following format: YYYYMMDD."
-    echo "[dbs_location] = hdfs location of resulting DBS files. Default: /cms/users/$USER/dbs_datasets"
-    echo "[phedex_location] = hdfs location of resulting PhEDEx files. Default: /cms/users/$USER/phedex_datasets"
+    echo "[dbs_location] = hdfs location of resulting DBS files. Default: /cms/aggregation/dbs_datasets"
+    echo "[phedex_location] = hdfs location of resulting PhEDEx files. Default: /cms/aggregation/phedex_datasets"
     exit 0
 fi
 

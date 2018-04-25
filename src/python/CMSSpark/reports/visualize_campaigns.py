@@ -1,7 +1,8 @@
 import pandas as pd
 import matplotlib as mpl
 # We will not be showing images because we don't haw UI
-mpl.use('Agg')
+if mpl.get_backend() != "agg":
+    mpl.use("agg")
 import matplotlib.pyplot as plt
 from report_builder import ReportBuilder
 import os

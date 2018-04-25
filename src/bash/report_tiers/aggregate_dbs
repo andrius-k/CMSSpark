@@ -2,12 +2,12 @@
 
 if [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
     echo "Usage: ./"$(basename "$0")" [location]"
-    echo "Example: ./"$(basename "$0")" /cms/users/$USER/dbs_datasets"
-    echo "[location] = hdfs location of resulting files. Default: /cms/users/$USER/dbs_datasets"
+    echo "Example: ./"$(basename "$0")" /cms/aggregation/dbs_datasets"
+    echo "[location] = hdfs location of resulting files. Default: /cms/aggregation/dbs_datasets"
     exit 0
 fi
 
-hdir=/cms/users/$USER/dbs_datasets
+hdir=/cms/aggregation/dbs_datasets
 
 if [[ -n $1 ]]
 then
@@ -47,4 +47,7 @@ then
     # concatenate all parts except header
     header=`cat $scriptpath/dbs_df.csv`
     cat $scriptpath/$result_dir/part* | grep -v $header >> $scriptpath/dbs_df.csv
+
+    # Remove folder with separate parts
+    rm -rf "$scriptpath/$result_dir"
 fi

@@ -118,7 +118,7 @@ def run(fout, date, yarn=None, verbose=None, inst='GLOBAL', limit=100):
                    .drop(dbs_df.d_dataset_id)\
                    .drop(fdf_df.f_dataset_id)\
                    .drop(dbs_df.dataset_access_type)
-
+    
     # dataset, dbs_size
     dbs_df = dbs_df.groupBy(['dataset'])\
                    .agg({'dbs_size':'sum'})\
@@ -134,7 +134,7 @@ def run(fout, date, yarn=None, verbose=None, inst='GLOBAL', limit=100):
     ctx.stop()
 
 def aggregate(sqlContext, fout, phedex_all_df, dbs_df, limit, disk_only=False):
-    extract_campaign_udf = udf(lambda dataset: dataset.split('/')[2])
+    extract_campaign_udf = udf(lambda dataset: dataset.split('/')[2].split('-')[0])
 
     if disk_only == True:
         is_tape = lambda site: site.endswith('_MSS') | site.endswith('_Buffer') | site.endswith('_Export')
@@ -191,7 +191,7 @@ def aggregate(sqlContext, fout, phedex_all_df, dbs_df, limit, disk_only=False):
     second_mss_udf = udf(get_second_mss, LongType())
     mss_name_udf = udf(lambda row: get_mss_name(row, sites_columns), StringType())
     second_mss_name_udf = udf(lambda row: get_second_mss_name(row, sites_columns), StringType())
-
+    
     result = result.withColumn('sites', number_of_sites_udf(struct([result[x] for x in sites_columns])))\
                    .withColumn('mss', mss_udf(struct([result[x] for x in sites_columns])))\
                    .withColumn('mss_name', mss_name_udf(struct([result[x] for x in sites_columns])))\

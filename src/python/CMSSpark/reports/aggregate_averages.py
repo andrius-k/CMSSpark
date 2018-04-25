@@ -68,14 +68,14 @@ def run(fout, yarn=None, verbose=None):
 
     df = sqlContext.read.format('com.databricks.spark.csv')\
                         .options(treatEmptyValuesAsNulls='true', nullValue='null')\
-                        .load('hdfs:///cms/phedex/2017/03/*/part-00000', schema=schema)
-                        # .load('hdfs:///cms/phedex/*/*/*/part-*', schema=schema)
+                        .load('hdfs:///cms/phedex/*/*/*/part-*', schema=schema)
+                        # .load('hdfs:///cms/phedex/2017/03/*/part-00000', schema=schema)
 
     # Remove all tape sites
     is_tape = lambda site: site.endswith('_MSS') | site.endswith('_Buffer') | site.endswith('_Export')
     df = df.where(is_tape(df.site) == False)
 
-    extract_campaign_udf = udf(lambda dataset: dataset.split('/')[2])
+    extract_campaign_udf = udf(lambda dataset: dataset.split('/')[2].split('-')[0])
     extract_tier_udf = udf(lambda dataset: dataset.split('/')[3])
     date_to_timestamp_udf = udf(lambda date: time.mktime(datetime.datetime.strptime(date, "%Y%m%d").timetuple()))
     timestamp_to_date_udf = udf(lambda timestamp: datetime.datetime.fromtimestamp(float(timestamp)).strftime('%Y%m%d'))
@@ -103,10 +103,15 @@ def run(fout, yarn=None, verbose=None):
         
     df = df.withColumn('existence_in_period', df.days_count / df.period_days)
     df = df.withColumn('average_size_in_period', df.size_average * df.existence_in_period)
-    
-    # campaign, tier, date_max, date_min, days_count, size_max, size_average, period_days, existence_in_period, average_size_in_period
-    df.show(truncate=False)
 
+    # campaign, tier, date_max, date_min, days_count, size_max, size_average, period_days, existence_in_period, average_size_in_period
+
+    # write out results back to HDFS, the fout parameter defines area on HDFS
+    # it is either absolute path or area under /user/USERNAME
+    if fout:
+        df.write.format("com.databricks.spark.csv")\
+                          .option("header", "true").save(fout)
+    
     ctx.stop()
 
 @info_save('%s/%s' % (get_destination_dir(), AVERAGES_TIME_DATA_FILE))
